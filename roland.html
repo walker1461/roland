@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TR-808 Drum Machine</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.10.0/addons/p5.sound.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body { 
+            font-family: 'Press Start 2P', sans-serif; 
+            background-color: #222;
+            color: #fff;
+            text-align: center;
+        }
+        nav,
+        .nav-links {
+            display: flex;
+        }
+        nav {
+            justify-content: space-around;
+            align-items: center;
+            height: 17vh;
+        }
+        .nav-links {
+            gap: 2rem;
+            list-style: none;
+            font-size: 1.5rem;
+        }
+        .nav-links {
+            gap: 2rem;
+            list-style: none;
+            font-size: 1.5rem;
+        }
+        a {
+            color: #025A4E;
+            text-decoration: none;
+            text-decoration-color: #82A18F;
+        }
+        a:hover {
+            color: #82A18F;
+            text-decoration: underline;
+            text-underline-offset: 0.15rem;
+            text-decoration-color: #82A18F;
+        }
+        .logo {
+            font-size: 1.9rem;
+        }
+
+        .logo:hover {
+            cursor: default;
+        }
+        #machine {
+            background-color: #383838;
+            border: 10px solid rgb(43, 42, 42);
+            padding-top: 10px;
+            padding-bottom: 36px;
+            padding-right: 16px;
+            border-radius: 10px;
+            width: 50%;
+            justify-content: center;
+            margin-left: 25%;
+        }
+        h1 {
+            color: #f5a623;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            margin-left: 80px;
+        }
+        .drum-machine {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .button-grid {
+            display: grid;
+            grid-template-columns: 100px repeat(16, 40px);
+            grid-gap: 5px;
+        }
+        button {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            border: 2px solid #444;
+            transition: background-color 0.3s;
+        }
+        .kick { background-color: #db3309; }
+        .snare { background-color: #db3309; }
+        .hihat { background-color: #e27227; }
+        .clap { background-color: #e27227; }
+        .cowbell { background-color: #e6da3d; }
+        .tom { background-color: #e6da3d; }
+        .openhat { background-color: #f8f3d4; }
+        .rim { background-color: #f8f3d4; }
+        button.active.kick { background-color: #f1856a; }
+        button.active.snare { background-color: #f1856a; } 
+        button.active.hihat { background-color: #df9d72; } 
+        button.active.clap { background-color: #df9d72; } 
+        button.active.cowbell { background-color: #e2dc87; } 
+        button.active.tom { background-color: #e2dc87; }
+        button.active.openhat { background-color: #000000; }
+        button.active.rim { background-color: #000000; }
+        button.highlight { box-shadow: 0 0 10px rgb(255, 255, 169); }
+        .row-label {
+            color: #f5a623;
+            text-align: left;
+            line-height: 40px;
+            font-size: 12px;
+        }
+        .controls {
+            margin-top: 20px;
+            margin-left: 40px;
+        }
+        .play-button, .save-button, .clear-button {
+            background-color: #db3309;
+            border: none;
+            color: #fff;
+            font-size: 18px;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-right: 2px;
+        }
+        .play-button:hover, .save-button:hover, .clear-button:hover {
+            background-color: #b00117;
+        }
+        .play-button i, .save-button i, .clear-button i {
+            margin-right: 0px;
+        }
+        #bpm {
+            width: 300px;
+        }
+        .slider-label {
+            font-size: 14px;
+            color: #f5a623;
+            margin-left: 6px;
+        }
+        .pattern-bank {
+            margin-top: 20px;
+            margin-left: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .pattern-slot {
+            width: 32px;
+            height: 32px;
+            background-color: #444;
+            border: 2px solid #f5a623;
+            border-radius: 2px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s;
+        }
+        .pattern-slot.active {
+            background-color: #f5a623;
+            color: #1a1a1a;
+        }
+        @media (max-width: 768px) {
+            .button-grid { grid-template-columns: 80px repeat(8, 40px); }
+            .play-button { font-size: 12px; padding: 8px 16px; }
+            #bpm { width: 200px; }
+        }
+        input[type=range] {
+            height: 0px;
+            -webkit-appearance: none;
+            margin: 10px 0px 9px 0px;
+            width: 100%;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            box-shadow: 0px 0px 0px #DEECFF;
+            background: #40a143;
+            border-radius: 4px;
+            border: 2px solid rgb(5, 131, 10);
+        }
+        input[type=range]::-webkit-slider-thumb {
+            box-shadow: 0px 0px 0px #828282;
+            border: 2px solid #cf7f07;
+            height: 18px;
+            width: 18px;
+            border-radius: 5px;
+            background: #db8709;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -7px;
+        }
+        input[type=range]:focus::-webkit-slider-runnable-track {
+            background: #40a143;
+        }
+        input[type=range]::-moz-range-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            box-shadow: 0px 0px 0px #DEECFF;
+            background: #2b2928;
+            border-radius: 4px;
+            border: 2px solid rgb(41, 38, 38);
+        }
+        input[type=range]::-moz-range-thumb {
+            box-shadow: 0px 0px 0px #828282;
+            border: 2px solid #cf7f07;
+            height: 18px;
+            width: 18px;
+            border-radius: 5px;
+            background: #db8709;
+            cursor: pointer;
+        }
+        input[type=range]::-ms-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: transparent;
+            border-color: transparent;
+            color: transparent;
+        }
+        input[type=range]::-ms-fill-lower {
+            background: #03AB25;
+            border: 2px solid rgb(5, 131, 10);
+            border-radius: 8px;
+            box-shadow: 0px 0px 0px #DEECFF;
+        }
+        input[type=range]::-ms-fill-upper {
+            background: #03AB25;
+            border: 2px solid rgb(5, 131, 10);
+            border-radius: 8px;
+            box-shadow: 0px 0px 0px #DEECFF;
+        }
+        input[type=range]::-ms-thumb {
+            margin-top: 1px;
+            box-shadow: 0px 0px 0px #828282;
+            border: 2px solid #cf7f07;
+            height: 18px;
+            width: 18px;
+            border-radius: 5px;
+            background: #db8709;
+            cursor: pointer;
+        }
+        input[type=range]:focus::-ms-fill-lower {
+            background: #03AB25;
+        }
+        input[type=range]:focus::-ms-fill-upper {
+            background: #03AB25;
+        }
+    </style>
+</head>
+<body>
+    <nav id="desktop-nav">
+        <div class="logo">Walker Immel</div>
+        <div>
+            <ul class="nav-links">
+                <li><a href="/index.html#projects">Return to Portfolio</a></li>
+            </ul>
+        </div>
+    </nav>
+
+<div id="machine">
+    <h1>TR-808 Drum Machine</h1>
+    <div class="drum-machine">
+        <div id="sequencer" class="button-grid"></div>
+        <div class="controls">
+            <button id="play-pause" class="play-button"><i class="fas fa-play"></i></button>
+            <button id="clear-pattern" class="clear-button"><i class="fas fa-redo"></i></button>
+            <button id="save-pattern" class="save-button"><i class="fas fa-save"></i></button>
+            <label for="bpm" class="slider-label">BPM: </label>
+            <input type="range" id="bpm" min="60" max="180" value="120">
+            <span id="bpm-value">120</span>
+        </div>
+        <div class="pattern-bank">
+            <div class="pattern-slot" id="pattern-1">1</div>
+            <div class="pattern-slot" id="pattern-2">2</div>
+            <div class="pattern-slot" id="pattern-3">3</div>
+            <div class="pattern-slot" id="pattern-4">4</div>
+            <div class="pattern-slot" id="pattern-5">5</div>
+            <div class="pattern-slot" id="pattern-6">6</div>
+        </div>
+    </div>
+</div>
+
+    <script src="sketch.js"></script>
+</body>
+</html>
